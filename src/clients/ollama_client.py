@@ -141,9 +141,19 @@ class OllamaMCPClient(AbstractAsyncContextManager):
 
     async def _recursive_prompt(self, model: str) -> AsyncIterator[ChatResponse]:
         # self.logger.debug(f"message: {self.messages}")
-        self.logger.debug("Prompting")
+        self.logger.debug(f"Prompting model '{model}' with {len(self.messages)} messages")
+        self.logger.debug(f"Available tools: {[cast(Tool.Function, tool.function).name for tool in self.get_tools()]}")
+        
+        # Log the last user message for context
+        user_messages = [msg for msg in self.messages if msg.get('role') == 'user']
+        if user_messages:
+            last_user_msg = user_messages[-1].get('content', '')
+            preview = last_user_msg[:100] + "..." if len(last_user_msg) > 100 else last_user_msg
+            self.logger.debug(f"User query: {preview}")
+        
         stream = await self.client.chat(
             model=model,
+            think=False, # ini hanya supaya bisa jauh lebih cepat merespon
             messages=self.messages,
             tools=self.get_tools(),
             stream=True,
