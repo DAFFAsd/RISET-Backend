@@ -2,8 +2,8 @@ import asyncio
 import re
 import sys
 
-from abstract.config_container import ConfigContainer
-from clients.ollama_client import OllamaMCPClient
+from src.abstract.config_container import ConfigContainer
+from src.clients.ollama_client import OllamaMCPClient
 
 
 async def main():

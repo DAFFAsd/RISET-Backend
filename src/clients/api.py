@@ -7,8 +7,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 # Import your OllamaMCPClient from the original file
-from abstract.config_container import ConfigContainer
-from clients.ollama_client import OllamaMCPClient
+from ..abstract.config_container import ConfigContainer
+from .ollama_client import OllamaMCPClient
 
 # Global client instance
 client_instance = None

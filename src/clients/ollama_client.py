@@ -12,9 +12,9 @@ from mcp.client.streamable_http import streamablehttp_client
 from mcp.types import TextContent
 from ollama import AsyncClient, Message, Tool
 
-from abstract.api_response import ChatResponse
-from abstract.config_container import ConfigContainer
-from abstract.session import Session
+from ..abstract.api_response import ChatResponse
+from ..abstract.config_container import ConfigContainer
+from ..abstract.session import Session
 
 SYSTEM_PROMPT = """You are a helpful assistant capable of accessing external functions and engaging in casual chat.
 Use the responses from these function calls to provide accurate and informative answers.
@@ -132,7 +132,7 @@ class OllamaMCPClient(AbstractAsyncContextManager):
         """Clear current message and create new one"""
         self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-    async def process_message(self, message: str, model: str = "qwen2.5:14b") -> AsyncIterator[ChatResponse]:
+    async def process_message(self, message: str, model: str = "qwen3:8b") -> AsyncIterator[ChatResponse]:
         """Process a query using LLM and available tools"""
         self.messages.append({"role": "user", "content": message})
 

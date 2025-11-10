@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ollama-mcp-client"
 version = "0.1.0"
@@ -10,6 +14,10 @@ dependencies = [
     "mcp>=1.12.3",
     "ollama>=0.4.8",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
 
 [tool.ruff]
 line-length = 120
