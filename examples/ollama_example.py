@@ -12,7 +12,7 @@ async def main():
         sys.exit(1)
 
     config = ConfigContainer.from_file(sys.argv[1])
-    async with await OllamaMCPClient.create(config, "192.168.0.33:11434") as client:
+    async with await OllamaMCPClient.create(config, "127.0.0.1:11434") as client:
         print("client initiated")
         print("\nMCP Client Started!")
         print("Type your queries or 'quit' to exit.")
