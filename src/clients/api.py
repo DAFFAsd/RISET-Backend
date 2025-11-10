@@ -3,6 +3,7 @@ import json
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -32,6 +33,15 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app with lifespan handler
 app = FastAPI(title="Ollama MCP API", lifespan=lifespan)
+
+# Add CORS middleware untuk frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Next.js default port
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 async def get_client():
