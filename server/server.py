@@ -60,6 +60,50 @@ async def get_restaurants(token: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
+async def find_nearest_restaurants(
+    latitude: float, 
+    longitude: float, 
+    token: str, 
+    radius: int = 5000,
+    keyword: str = ""
+) -> Dict[str, Any]:
+    """Find nearest restaurants or any eating places based on user's location using Google Places API.
+    Returns maximum 10 nearest places sorted by distance.
+    
+    Args:
+        latitude (float): User's latitude coordinate
+        longitude (float): User's longitude coordinate
+        token (str): User authentication token
+        radius (int): Search radius in meters (default: 5000m or 5km)
+        keyword (str): Optional search keyword to filter specific type of restaurants or food (e.g., "pizza", "chinese food", "cafe", etc.)
+    
+    Returns:
+        dict: Response with list of nearby restaurants sorted by distance, includes:
+            - success: boolean
+            - restaurants: list of restaurant objects with name, distance, rating, etc.
+            - totalFound: number of restaurants found (max 10)
+            - keyword: search keyword used (if any)
+    """
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "radius": radius
+    }
+    
+    if keyword:
+        params["keyword"] = keyword
+    
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"{BASE_URL}/api/restaurants/nearby",
+            params=params,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        res.raise_for_status()
+        return res.json()
+
+
+@mcp.tool()
 async def get_menu(restaurant_id: int, token: str) -> Dict[str, Any]:
     """Get menu items from a specific restaurant
     
