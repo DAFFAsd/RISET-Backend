@@ -131,15 +131,17 @@ class OllamaMCPClient(AbstractAsyncContextManager):
     async def prepare_prompt(self):
         """Clear current message and create new one"""
         self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        self.user_token = ""
 
-    async def process_message(self, message: str, model: str = "qwen3:8b") -> AsyncIterator[ChatResponse]:
+    async def process_message(self, message: str, model: str = "qwen3:8b", token: str = "") -> AsyncIterator[ChatResponse]:
         """Process a query using LLM and available tools"""
         self.messages.append({"role": "user", "content": message})
+        self.user_token = token
 
-        async for part in self._recursive_prompt(model):
+        async for part in self._recursive_prompt(model, tool_chain=[]):
             yield part
 
-    async def _recursive_prompt(self, model: str) -> AsyncIterator[ChatResponse]:
+    async def _recursive_prompt(self, model: str, tool_chain: list[str]) -> AsyncIterator[ChatResponse]:
         # self.logger.debug(f"message: {self.messages}")
         self.logger.debug(f"Prompting model '{model}' with {len(self.messages)} messages")
         self.logger.debug(f"Available tools: {[cast(Tool.Function, tool.function).name for tool in self.get_tools()]}")
@@ -162,20 +164,47 @@ class OllamaMCPClient(AbstractAsyncContextManager):
         tool_message_count = 0
         async for part in stream:
             if part.message.content:
-                yield ChatResponse(role="assistant", content=part.message.content)
+                yield ChatResponse(
+                    role="assistant",
+                    content=part.message.content,
+                    tool_name=None,
+                    tool_status=None,
+                    tool_chain=tool_chain if tool_chain else None
+                )
             elif part.message.tool_calls:
                 self.logger.debug(f"Calling tool: {part.message.tool_calls}")
-                tool_messages = await self._tool_call(part.message.tool_calls)
+                
+                # Send status for each tool being called
+                for tool_call in part.message.tool_calls:
+                    tool_name = tool_call.function.name
+                    new_tool_chain = tool_chain + [tool_name]
+                    
+                    # Send calling status
+                    yield ChatResponse(
+                        role="status",
+                        content=f"Calling tool: {tool_name}",
+                        tool_name=tool_name,
+                        tool_status="calling",
+                        tool_chain=new_tool_chain
+                    )
+                
+                tool_messages = await self._tool_call(part.message.tool_calls, tool_chain)
                 tool_message_count += 1
                 for tool_message in tool_messages:
-                    yield ChatResponse(role="tool", content=tool_message)
+                    yield ChatResponse(
+                        role="tool",
+                        content=tool_message,
+                        tool_name=None,
+                        tool_status=None,
+                        tool_chain=tool_chain if tool_chain else None
+                    )
                     self.messages.append({"role": "tool", "content": tool_message})
 
         if tool_message_count > 0:
-            async for part in self._recursive_prompt(model):
+            async for part in self._recursive_prompt(model, tool_chain):
                 yield part
 
-    async def _tool_call(self, tool_calls: Sequence[Message.ToolCall]) -> list[str]:
+    async def _tool_call(self, tool_calls: Sequence[Message.ToolCall], tool_chain: list[str]) -> list[str]:
         messages: list[str] = []
         for tool in tool_calls:
             split = tool.function.name.split("/")
@@ -183,6 +212,11 @@ class OllamaMCPClient(AbstractAsyncContextManager):
             tool_name = split[1]
             tool_args = tool.function.arguments
 
+            # Add token to tool arguments if available and tool requires it
+            if hasattr(self, 'user_token') and self.user_token and 'token' in str(tool_args):
+                tool_args = {**tool_args, 'token': self.user_token}
+
+            # Send processing status (this will be handled by the caller)
             # Execute tool call
             try:
                 result = await session.call_tool(tool_name, dict(tool_args))

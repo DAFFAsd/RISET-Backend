@@ -65,6 +65,7 @@ async def get_client():
 class ChatRequest(BaseModel):
     message: str
     model: str = "qwen3:8b"
+    token: str = ""
 
 
 @app.post("/api/chat")
@@ -76,9 +77,9 @@ async def stream_chat(request: ChatRequest):
 
     async def response_generator():
         if first_chunk:
-            yield json.dumps(first_chunk)
+            yield f"data: {json.dumps(first_chunk)}\n\n"
         async for part in iter:
-            yield json.dumps(part)
+            yield f"data: {json.dumps(part)}\n\n"
             await asyncio.sleep(0.01)
 
     try:
@@ -87,6 +88,11 @@ async def stream_chat(request: ChatRequest):
         return StreamingResponse(
             response_generator(),
             media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Access-Control-Allow-Origin": "*",
+            }
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
