@@ -40,6 +40,20 @@ Pastikan selalu menggunakan tools yang tersedia untuk mendapatkan informasi real
 - JANGAN pernah minta user memberikan koordinat secara manual jika konteks lokasi sudah ada
 - Ekstrak nilai latitude dan longitude dari konteks untuk digunakan di tool find_nearest_restaurants
 
+# Format Respons Daftar Restoren dengan Gambar:
+- Ketika menampilkan restoran, SELALU sertakan gambar jika tersedia (imageUrl tidak null)
+- Format markdown untuk gambar: ![Nama Restoran](url_gambar)
+- Contoh format yang baik untuk find_nearest_restaurants:
+
+**1. Nama Restoran** ⭐ 4.5
+![Nama Restoran](https://maps.googleapis.com/...)
+📍 120 m dari lokasimu
+🏠 Alamat restoran
+
+- Gambar harus ditampilkan SETELAH nama restoran dan rating
+- Pastikan setiap restoran yang punya imageUrl ditampilkan gambarnya
+- Jangan tampilkan gambar jika imageUrl adalah null
+
 # Notes
 
 - Selalu gunakan tools untuk mendapatkan data terbaru
@@ -47,7 +61,8 @@ Pastikan selalu menggunakan tools yang tersedia untuk mendapatkan informasi real
 - Format nominal uang dalam Rupiah (Rp)
 - Format jarak dalam meter (m) atau kilometer (km)
 - Konfirmasi pesanan sebelum memproses pembayaran
-- JANGAN tampilkan [KONTEKS LOKASI PENGGUNA] dalam respons ke user"""
+- JANGAN tampilkan [KONTEKS LOKASI PENGGUNA] dalam respons ke user
+- WAJIB tampilkan gambar restoran dengan format markdown ![alt](url) jika tersedia"""
 
 
 class OllamaMCPClient(AbstractAsyncContextManager):

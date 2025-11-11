@@ -18,7 +18,9 @@ mcp = FastMCP("foodbot")
 # Base URL for the Next.js API
 BASE_URL = os.getenv("API_BASE_URL", "http://localhost:3000")
 
+# Define MCP tools (Ini bisa dipisah-pisah ke file lain jika diperlukan untuk modularitas)
 
+# ini masih mock karena pembayarannya cuma pake existing db
 @mcp.tool()
 async def topup_saldo(amount: float, token: str) -> Dict[str, Any]:
     """Top up user's balance/saldo
@@ -102,7 +104,7 @@ async def find_nearest_restaurants(
         res.raise_for_status()
         return res.json()
 
-
+# ini masih mock karena pakai existing db
 @mcp.tool()
 async def get_menu(restaurant_id: int, token: str) -> Dict[str, Any]:
     """Get menu items from a specific restaurant
@@ -122,7 +124,7 @@ async def get_menu(restaurant_id: int, token: str) -> Dict[str, Any]:
         res.raise_for_status()
         return res.json()
 
-
+# ini masih mock karena pakai existing db
 @mcp.tool()
 async def create_order(
     restaurant_id: int,
@@ -172,7 +174,6 @@ async def get_my_orders(token: str) -> Dict[str, Any]:
         )
         res.raise_for_status()
         return res.json()
-
 
 @mcp.tool()
 async def get_my_balance(token: str) -> Dict[str, Any]:
