@@ -72,7 +72,7 @@ class ChatRequest(BaseModel):
 async def stream_chat(request: ChatRequest):
     client = await get_client()
 
-    iter = client.process_message(request.message, request.model)
+    iter = client.process_message(request.message, request.model, request.token)
     first_chunk = None
 
     async def response_generator():
