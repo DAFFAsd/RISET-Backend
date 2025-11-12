@@ -17,5 +17,5 @@ uv pip install -e .
 ```
 
 ```shell
-uv run examples/ollama_example.py examples/server.json
+python run_api.py
 ```
